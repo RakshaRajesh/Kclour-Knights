@@ -1,0 +1,156 @@
+#include <Servo.h>
+
+// Define color sensor pins
+#define S0 6
+#define S1 5
+#define S2 8
+#define S3 7
+#define sensorOut 9
+
+const int F = 2;
+const int B = 4;
+const int front = 90;
+const int left = 60;
+const int right = 115;
+
+const int t = 1480;
+Servo servo;
+
+// Calibration Values
+// *Get these from Calibration Sketch
+int redMin = 23;  // Red minimum value
+int redMax = 200; // Red maximum value
+int greenMin = 25;  // Green minimum value
+int greenMax = 230; // Green maximum value
+int blueMin = 18; // Blue minimum value
+int blueMax = 199; // Blue maximum value
+
+// Variables for Color Pulse Width Measurements
+int redPW = 0;
+int greenPW = 0;
+int bluePW = 0;
+
+// Variables for final Color values
+int redValue;
+int greenValue;
+int blueValue;
+
+void setup() {
+  // Set S0 - S3 as outputs
+  pinMode(S0, OUTPUT);
+  pinMode(S1, OUTPUT);
+  pinMode(S2, OUTPUT);
+  pinMode(S3, OUTPUT);
+  pinMode(A0, OUTPUT);
+  pinMode(A1, OUTPUT);
+  servo.attach(10);
+  pinMode(sensorOut, INPUT);
+
+  digitalWrite(S0, HIGH);
+  digitalWrite(S1, LOW);
+
+  Serial.begin(9600);
+}
+
+void loop() {
+   if (Serial.available() > 0)
+    char command = Serial.read();
+
+  redPW = getRedPW();
+  redValue = map(redPW, redMin, redMax, 255, 0);
+  delay(10);
+
+  greenPW = getGreenPW();
+  greenValue = map(greenPW, greenMin, greenMax, 255, 0);
+  delay(10);
+
+  bluePW = getBluePW();
+  blueValue = map(bluePW, blueMin, blueMax, 255, 0);
+  delay(10);
+ 
+
+  Serial.print("Red = ");
+  Serial.print(redValue);
+  Serial.print(" - Green = ");
+  Serial.print(greenValue);
+  Serial.print(" - Blue = ");
+  Serial.println(blueValue);
+ 
+
+  if (redValue-greenValue >= 15 && redValue-blueValue >= 18 && redValue > 200 && redValue < 260) {
+   digitalWrite(A0,HIGH);
+    digitalWrite(A1,LOW);
+    turnRight();
+
+    delay(1505);
+    moveForward();
+  }
+ 
+   if (greenValue-redValue >= 15 && greenValue < 255) {
+    digitalWrite(A0,LOW);
+    digitalWrite(A1,HIGH);
+    turnLeft();
+    delay(t);
+    moveForward();
+   
+
+  }
+
+  else {
+    digitalWrite(A0,LOW);
+    digitalWrite(A1,LOW);
+    moveForward();
+   
+  }
+}
+
+int getRedPW() {
+  digitalWrite(S2, LOW);
+  digitalWrite(S3, LOW);
+  int PW;
+  PW = pulseIn(sensorOut, LOW);
+  return PW;
+}
+
+int getGreenPW() {
+  digitalWrite(S2, HIGH);
+  digitalWrite(S3, HIGH);
+  int PW;
+  PW = pulseIn(sensorOut, LOW);
+  return PW;
+
+}
+
+int getBluePW() {
+  digitalWrite(S2, LOW);
+  digitalWrite(S3, HIGH);
+  int PW;
+  PW = pulseIn(sensorOut, LOW);
+  return PW;
+}
+
+void moveForward() {
+  digitalWrite(F,HIGH);
+  digitalWrite(B,LOW);
+  servo.write(front);
+}
+
+void turnRight() {
+  digitalWrite(F,HIGH);
+  digitalWrite(B,LOW);
+  servo.write(right);
+ 
+ 
+}
+
+void turnLeft() {
+  digitalWrite(F,HIGH);
+  digitalWrite(B,LOW);
+  servo.write(left);
+ }
+
+void stopCar() {
+  digitalWrite(F,LOW);
+  digitalWrite(B,LOW);
+  servo.write(front);
+}
