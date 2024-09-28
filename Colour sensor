@@ -1,0 +1,73 @@
+#define S0 4
+#define S1 5
+#define S2 6
+#define S3 7
+#define OUT 8
+
+// Define color thresholds
+int minBlue = 11;
+int maxBlue = 16;
+int minOrange = 6;
+int maxOrange = 9;
+int minWhite = 6;
+int maxWhite = 11;
+
+void setup() {
+    Serial.begin(9600);
+    
+    pinMode(S0, OUTPUT);
+    pinMode(S1, OUTPUT);
+    pinMode(S2, OUTPUT);
+    pinMode(S3, OUTPUT);
+    pinMode(OUT, INPUT);
+    
+    // Set frequency scaling to 100%
+    digitalWrite(S0, HIGH);
+    digitalWrite(S1, HIGH);
+}
+
+void loop() {
+    // Read Red
+    digitalWrite(S2, LOW);
+    digitalWrite(S3, LOW);
+    int red = pulseIn(OUT, LOW);
+    
+    // Read Green
+    digitalWrite(S2, HIGH);
+    digitalWrite(S3, HIGH);
+    int green = pulseIn(OUT, LOW);
+    
+    // Read Blue
+    digitalWrite(S2, LOW);
+    digitalWrite(S3, HIGH);
+    int blue = pulseIn(OUT, LOW);
+    
+    // Print the results for reference
+    Serial.print("Red: ");
+    Serial.print(red);
+    Serial.print(" Green: ");
+    Serial.print(green);
+    Serial.print(" Blue: ");
+    Serial.println(blue);
+    
+    // Color detection logic
+    
+    // Detecting Orange color
+    if (blue >= minBlue && blue <= maxBlue && red < 17 && green < 17) {
+        Serial.println("Detected Color: Orange");
+    } 
+    // Detecting White color
+    else if (red >= minOrange && red <= maxOrange && green < 10 && blue < 15) {
+        Serial.println("Detected Color: White");
+    } 
+    // Detecting Blue color
+    else if (red >= minWhite && red <= maxWhite && green >= minWhite && blue >= minWhite) {
+        Serial.println("Detected Color: Blue");
+    } 
+    // If no color matches
+    else {
+        Serial.println("Color not recognized");
+    }
+    
+    delay(1000); // Delay for readability
+}44
